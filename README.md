@@ -77,3 +77,32 @@ Track repeated late returns and send stronger or earlier reminders to those memb
 Maintain accurate issue and return records so that overdue reports can be generated regularly.
 Conclusion
 The library should purchase more copies of high-demand books that have zero stock and pending issues, especially Database System Concepts, Python Crash Course and Data Communications. It should immediately remind the three overdue members, send advance reminders for upcoming due dates, and use automated notifications and consistent fines to reduce late returns.
+
+
+
+
+Create the trigger
+DELIMITER $$
+
+CREATE TRIGGER decrease_book_copies
+AFTER INSERT ON issues_copy
+FOR EACH ROW
+BEGIN
+    UPDATE books_copy
+    SET copies_available = copies_available - 1
+    WHERE book_id = NEW.book_id;
+END $$
+
+DELIMITER ;
+
+-- Test the trigger
+-- Book ID 9 (Wings of Fire) has 5 available copies initially
+INSERT INTO issues_copy
+    (issue_id, member_id, book_id, issue_date, due_date, return_date)
+VALUES
+    (33, 9, 9, '2026-11-11', '2026-11-25', NULL);
+
+-- Verify the result
+SELECT book_id, title, copies_available
+FROM books_copy
+WHERE book_id = 9;
